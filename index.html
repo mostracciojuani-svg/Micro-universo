@@ -74,9 +74,8 @@ select{font:inherit;padding:4px;background:var(--bg);color:var(--tx);border:1px 
 <label>Altura h₂: <b id="vz2"></b> m<input id="z2" type="range" min="0" max="10" step="0.1" value="0"></label>
 <label>Densidad ρ: <b id="vr"></b> kg/m³<input id="rho" type="range" min="500" max="1500" step="10" value="1000"></label>
 </div>
-<svg viewBox="0 0 400 160" aria-label="Tubo">
-<path id="tube" fill="var(--fl)" opacity=".55" stroke="currentColor" stroke-width="2"/>
-</svg>
+<canvas id="cv" width="800" height="320" style="width:100%;height:auto;margin-top:10px;border-radius:8px;background:var(--bg)" aria-label="Tubo con partículas en movimiento"></canvas>
+<p class="s">Cada punto es una partícula del fluido. Su color y su rapidez muestran la velocidad local: azul = lento, naranja = rápido (escala relativa).</p>
 <div class="res"><div><span>Velocidad v₂</span><strong id="o1"></strong></div><div><span>Presión P₂</span><strong id="o2"></strong></div><div><span>Caudal Q</span><strong id="o3"></strong></div></div>
 <p class="s" id="warn"></p>
 </section>
@@ -99,11 +98,35 @@ var v2=a1*v1/a2;
 var P2=P1*1000+0.5*r*(v1*v1-v2*v2)+r*g*(z1-z2);
 $("o1").textContent=v2.toFixed(2)+" m/s";$("o2").textContent=(P2/1000).toFixed(2)+" kPa";$("o3").textContent=(a1*v1/10).toFixed(2)+" L/s";
 $("warn").textContent=P2<0?"⚠ P₂ negativa: en la realidad habría cavitación; el modelo ideal deja de valer.":"";
-var t1=80-a1*0.6,t2=80-a2*0.6;
-$("tube").setAttribute("d","M20 "+t1+" L170 "+t1+" L230 "+t2+" L380 "+t2+" L380 "+(160-t2)+" L230 "+(160-t2)+" L170 "+(160-t1)+" L20 "+(160-t1)+" Z");}
+S.a1=a1;S.a2=a2;S.v1=v1;}
 ["fl","h1","p0","g"].forEach(function(i){$(i).oninput=hid});
 ["a1","a2","v1","P1","z1","z2","rho"].forEach(function(i){$(i).oninput=bern});
-hid();bern();
+var cv=$("cv"),cx=cv.getContext("2d"),W=800,H=320,CY=160,S={a1:40,a2:15,v1:2},P=[],last=0;
+for(var i=0;i<110;i++)P.push({x:Math.random()*W,y:Math.random()*2-1});
+function geo(x){var t=(x-W*0.35)/(W*0.25);t=Math.max(0,Math.min(1,t));t=t*t*(3-2*t);var A=S.a1+(S.a2-S.a1)*t;return{A:A,h:12+A*1.3};}
+function frame(ts){
+var dt=Math.min(0.05,(ts-last)/1000||0);last=ts;
+if($("d").classList.contains("on")){
+var cs=getComputedStyle(document.documentElement),fl=cs.getPropertyValue("--fl").trim(),tx=cs.getPropertyValue("--tx").trim();
+var v2=S.v1*S.a1/S.a2,vmax=Math.max(S.v1,v2),k=220/vmax;
+cx.clearRect(0,0,W,H);
+cx.beginPath();
+for(var x=0;x<=W;x+=8){var y=CY-geo(x).h;x?cx.lineTo(x,y):cx.moveTo(x,y);}
+for(var x2=W;x2>=0;x2-=8){cx.lineTo(x2,CY+geo(x2).h);}
+cx.closePath();cx.globalAlpha=.2;cx.fillStyle=fl;cx.fill();cx.globalAlpha=1;cx.strokeStyle=tx;cx.lineWidth=2;cx.stroke();
+for(var i=0;i<P.length;i++){
+var p=P[i],g=geo(p.x),v=S.v1*S.a1/g.A;
+p.x+=v*k*dt;p.y+=(Math.random()-.5)*0.03;
+if(p.y>1)p.y=1;if(p.y<-1)p.y=-1;
+if(p.x>W){p.x-=W;p.y=Math.random()*2-1;}
+var t=Math.min(1,v/vmax);
+cx.fillStyle="hsl("+(215-175*t)+",90%,55%)";
+cx.beginPath();cx.arc(p.x,CY+p.y*g.h*0.88,3.5,0,6.283);cx.fill();}
+cx.fillStyle=tx;cx.font="16px system-ui,sans-serif";
+cx.fillText("v₁ = "+S.v1.toFixed(1)+" m/s",20,24);
+cx.textAlign="right";cx.fillText("v₂ = "+v2.toFixed(1)+" m/s",W-20,24);cx.textAlign="left";}
+requestAnimationFrame(frame);}
+hid();bern();requestAnimationFrame(frame);
 </script>
 </body>
 </html>
