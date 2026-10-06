@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Curso de Fluidos</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1b2030;--mu:#5b6478;--ac:#2563eb;--bd:#dde1ec;--fl:#60a5fa;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1220;--card:#181c30;--tx:#e8ebf5;--mu:#98a1ba;--ac:#6ea8ff;--bd:#2a3050;--fl:#3b82f6}}
+:root[data-theme="dark"]{--bg:#0f1220;--card:#181c30;--tx:#e8ebf5;--mu:#98a1ba;--ac:#6ea8ff;--bd:#2a3050;--fl:#3b82f6}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+header{padding:20px 16px 8px;max-width:900px;margin:auto}
+h1{margin:0;font-size:1.6rem}h2{margin:0 0 6px;font-size:1.2rem}
+p.s{color:var(--mu);margin:4px 0 0}
+nav{display:flex;gap:8px;max-width:900px;margin:12px auto;padding:0 16px;flex-wrap:wrap}
+nav button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit}
+nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+nav button:disabled{opacity:.5;cursor:default}
+main{max-width:900px;margin:auto;padding:0 16px 32px}
+section{display:none;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px}
+section.on{display:block}
+.eq{font-family:Georgia,serif;font-size:1.15rem;text-align:center;padding:10px;background:var(--bg);border-radius:8px;margin:10px 0;overflow-x:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:8px}
+label{display:block;font-size:.9rem;color:var(--mu)}
+label b{color:var(--tx)}
+input[type=range]{width:100%}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.res div{background:var(--bg);border-radius:8px;padding:8px 10px}
+.res span{display:block;font-size:.8rem;color:var(--mu)}
+.res strong{font-size:1.1rem}
+svg{width:100%;height:auto;max-height:260px;margin-top:10px}
+select{font:inherit;padding:4px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:6px}
+</style>
+</head>
+<body>
+<header><h1>Curso de Fluidos</h1><p class="s">Hidrostática → Hidrodinámica. Cambiá los parámetros y mirá cómo cambia el resultado.</p></header>
+<nav>
+<button class="on" data-t="h">1. Hidrostática</button>
+<button data-t="d">2. Hidrodinámica (Bernoulli)</button>
+<button disabled>3. Próximamente…</button>
+</nav>
+<main>
+<section id="h" class="on">
+<h2>Presión en un fluido en reposo</h2>
+<p class="s">La presión aumenta linealmente con la profundidad.</p>
+<div class="eq">P = P₀ + ρ · g · h</div>
+<div class="grid">
+<label>Fluido <select id="fl"><option value="1000">Agua (1000)</option><option value="13600">Mercurio (13600)</option><option value="800">Aceite (800)</option><option value="1030">Agua de mar (1030)</option></select></label>
+<label>Profundidad h: <b id="vh"></b> m<input id="h1" type="range" min="0" max="50" step="0.5" value="10"></label>
+<label>Presión superficial P₀: <b id="vp"></b> kPa<input id="p0" type="range" min="0" max="300" step="1" value="101"></label>
+<label>Gravedad g: <b id="vg"></b> m/s²<input id="g" type="range" min="1" max="25" step="0.1" value="9.8"></label>
+</div>
+<svg viewBox="0 0 400 200" aria-label="Recipiente">
+<rect x="100" y="20" width="200" height="170" fill="none" stroke="currentColor" stroke-width="2"/>
+<rect id="water" x="101" y="60" width="198" height="129" fill="var(--fl)" opacity=".55"/>
+<line id="ml" x1="100" x2="300" y1="120" y2="120" stroke="var(--ac)" stroke-dasharray="5 4" stroke-width="2"/>
+<text id="mt" x="310" y="124" fill="currentColor" font-size="13">h</text>
+</svg>
+<div class="res"><div><span>Presión manométrica ρgh</span><strong id="r1"></strong></div><div><span>Presión absoluta P</span><strong id="r2"></strong></div></div>
+</section>
+
+<section id="d">
+<h2>Continuidad y Bernoulli</h2>
+<p class="s">Al cambiar la sección del tubo cambia la velocidad y, por Bernoulli, la presión.</p>
+<div class="eq">A₁v₁ = A₂v₂ &nbsp;&nbsp;|&nbsp;&nbsp; P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂</div>
+<div class="grid">
+<label>Área A₁: <b id="va1"></b> cm²<input id="a1" type="range" min="5" max="100" step="1" value="40"></label>
+<label>Área A₂: <b id="va2"></b> cm²<input id="a2" type="range" min="5" max="100" step="1" value="15"></label>
+<label>Velocidad v₁: <b id="vv1"></b> m/s<input id="v1" type="range" min="0.1" max="10" step="0.1" value="2"></label>
+<label>Presión P₁: <b id="vP1"></b> kPa<input id="P1" type="range" min="50" max="400" step="1" value="200"></label>
+<label>Altura h₁: <b id="vz1"></b> m<input id="z1" type="range" min="0" max="10" step="0.1" value="0"></label>
+<label>Altura h₂: <b id="vz2"></b> m<input id="z2" type="range" min="0" max="10" step="0.1" value="0"></label>
+<label>Densidad ρ: <b id="vr"></b> kg/m³<input id="rho" type="range" min="500" max="1500" step="10" value="1000"></label>
+</div>
+<svg viewBox="0 0 400 160" aria-label="Tubo">
+<path id="tube" fill="var(--fl)" opacity=".55" stroke="currentColor" stroke-width="2"/>
+</svg>
+<div class="res"><div><span>Velocidad v₂</span><strong id="o1"></strong></div><div><span>Presión P₂</span><strong id="o2"></strong></div><div><span>Caudal Q</span><strong id="o3"></strong></div></div>
+<p class="s" id="warn"></p>
+</section>
+</main>
+<script>
+var $=function(i){return document.getElementById(i)};
+document.querySelectorAll("nav button[data-t]").forEach(function(b){b.onclick=function(){
+document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("on")});b.classList.add("on");
+document.querySelectorAll("section").forEach(function(s){s.classList.remove("on")});$(b.dataset.t).classList.add("on")}});
+function hid(){
+var rho=+$("fl").value,h=+$("h1").value,p0=+$("p0").value,g=+$("g").value;
+$("vh").textContent=h;$("vp").textContent=p0;$("vg").textContent=g;
+var pm=rho*g*h/1000;
+$("r1").textContent=pm.toFixed(2)+" kPa";$("r2").textContent=(p0+pm).toFixed(2)+" kPa";
+var y=60+(h/50)*129;$("ml").setAttribute("y1",y);$("ml").setAttribute("y2",y);$("mt").setAttribute("y",y+4);$("mt").textContent="h = "+h+" m";}
+function bern(){
+var a1=+$("a1").value,a2=+$("a2").value,v1=+$("v1").value,P1=+$("P1").value,z1=+$("z1").value,z2=+$("z2").value,r=+$("rho").value,g=9.8;
+$("va1").textContent=a1;$("va2").textContent=a2;$("vv1").textContent=v1;$("vP1").textContent=P1;$("vz1").textContent=z1;$("vz2").textContent=z2;$("vr").textContent=r;
+var v2=a1*v1/a2;
+var P2=P1*1000+0.5*r*(v1*v1-v2*v2)+r*g*(z1-z2);
+$("o1").textContent=v2.toFixed(2)+" m/s";$("o2").textContent=(P2/1000).toFixed(2)+" kPa";$("o3").textContent=(a1*v1/10).toFixed(2)+" L/s";
+$("warn").textContent=P2<0?"⚠ P₂ negativa: en la realidad habría cavitación; el modelo ideal deja de valer.":"";
+var t1=80-a1*0.6,t2=80-a2*0.6;
+$("tube").setAttribute("d","M20 "+t1+" L170 "+t1+" L230 "+t2+" L380 "+t2+" L380 "+(160-t2)+" L230 "+(160-t2)+" L170 "+(160-t1)+" L20 "+(160-t1)+" Z");}
+["fl","h1","p0","g"].forEach(function(i){$(i).oninput=hid});
+["a1","a2","v1","P1","z1","z2","rho"].forEach(function(i){$(i).oninput=bern});
+hid();bern();
+</script>
+</body>
+</html>
